@@ -14,6 +14,11 @@ published: true
 ## 話したいこと
 cssbundling-railsにてtailwindモードを利用している場合、`application.tailwind.css`の内容をバンドルして`app/assets/builds/application.css`にまとめてくれる。しかし、初期状態では例えばオリジナルであなたが`app/assets/stylesheets`配下に新たに`custom.css`を追加して`application.tailwind.css`に`@import 'custom'`としてもオリジナルのcssファイルを読み込むことはできない。
 
+ref: [github cssbundling-rails](https://github.com/rails/cssbundling-rails#how-do-i-import-relative-css-files-with-tailwind)
+
+> If you want to use @import statements as part of your Tailwind application.js file, you need to configure Tailwind to use postcss and then postcss-import. But you should also consider simply referring to your other CSS files directly, instead of bundling them all into one big file. It's better for caching, and it's simpler to setup. You can refer to other CSS files by expanding the stylesheet_link_tag in application.html.erb like so: <%= stylesheet_link_tag "application", "other", "styles", "data-turbo-track": "reload" %>.
+
+
 ```css:application.tailwind.css
 @tailwind base;
 @tailwind components;
