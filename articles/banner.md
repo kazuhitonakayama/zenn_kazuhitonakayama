@@ -4,6 +4,7 @@ emoji: "💭"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ['wordpress', 'REST API']
 published: false
+publication_name: vcook
 ---
 
 ## 挨拶と、「何を伝えるものか」について
