@@ -1,0 +1,140 @@
+---
+title: "事業運営を加速！エンジニアに依頼せず誰でもバナー画像の追加・削除をできるようにした"
+emoji: "💭"
+type: "tech" # tech: 技術記事 / idea: アイデア
+topics: ['wordpress', 'REST API']
+published: false
+---
+
+## 挨拶と、「何を伝えるものか」について
+Hello Vegan!(弊社のMissionが「Hello Vegan!な社会をつくる」なので😎)  
+株式会社ブイクックにて、業務委託でエンジニアをしている[kazu](https://twitter.com/kazuhitonakayam)です。
+
+ブイクックでは、フルタイムのエンジニアがおらず、私を含めた3人の業務委託のエンジニアが、3つのwebサービス（[ブイクック レシピ（以下、レシピと呼称します）](https://vcook.jp), [ブイクックスーパー](https://vcooksuper.jp), [ヴィーガン攻略サイト](https://veganguide.vcook.jp)）の開発を行っています。
+
+今回は、特に[レシピ](https://vcook.jp)の事業運営を加速させるために、エンジニアに依頼せずとも誰でもバナー画像の追加・削除をできるようにした話をします。
+
+## どんな課題があったか
+先述の通り、ブイクックではフルタイムのエンジニアがおらず、業務委託のエンジニアが開発を行っています。
+
+しかしながら、業務委託のエンジニアの稼働時間はそれぞれ異なり、依頼してもスケジュールが合わなければ、依頼からリリースまでに時間がかかってしまいます。  
+であれば、エンジニアに依頼せずとも誰でもバナー画像の追加・削除ができるようになれば、これまでよりも速く事業運営ができるのではないかと考え、課題解決に取り組みました。
+
+具体的には、レシピには以下のようなバナー画像があります。
+![スライダーバナー](/images/banner/slider_banners.png)
+![PRバナー](/images/banner/pr_banners.png)
+
+
+## どうやって課題を解決したか
+端的に言えば、Wordpressにてバナー画像データをホスティングし、レシピからWordpress REST APIを叩き、画像データを内容にもつレスポンスを得てバナー画像を表示することで、Wordpressの管理画面からレシピのバナー画像を簡単に追加・削除できるようにしました。
+
+### Wordpress側で設定すると
+![Wordpressの管理画面](/images/banner/wordpress.png)
+
+### レシピ側で表示できる
+![スライダーバナー](/images/banner/slider_banners.png)
+
+### 詳細な実装方法
+プラグインの恩恵を大いに享受させてもらいました。
+以下、実現までのステップです。このあと詳しく説明します。
+
+- [CPT UI](https://wordpress.org/plugins/custom-post-type-ui/)を使って、バナー画像を管理するカスタム投稿タイプを作成する
+- [ACF](https://www.advancedcustomfields.com/)を使って、カスタム投稿タイプに画像データに関するカスタムフィールドを追加する
+- [Wordpress REST API](https://developer.wordpress.org/rest-api/)を使って、カスタム投稿タイプのデータをREST APIで取得できるようにする
+- あとはレシピ側で、Wordpress REST APIを叩いて、バナー画像を表示するだけ
+
+## 具体的なお話
+### [CPT UI](https://wordpress.org/plugins/custom-post-type-ui/)を使って、バナー画像を管理するカスタム投稿タイプを作成する
+CPT UIは、カスタム投稿タイプを管理するプラグインです。通常、Wordpressには投稿、固定ページ、カテゴリ、タグなどの投稿タイプがありますが、CPT UIを使うことで、それらに加えて、独自の投稿タイプを作成することができます。
+
+今回は、バナー画像を管理するために、CPT UIを使って、「レシピスライダーバナー」と「レシピPRバナー」というカスタム投稿タイプを作成しました。
+
+投稿タイプ作成時、設定において、REST APIが有効になっている必要があることに注意してください。
+![CPT UIの設定画面](/images/banner/cpt_ui_setting.png)
+
+### [ACF](https://www.advancedcustomfields.com/)を使って、カスタム投稿タイプに画像データに関するカスタムフィールドを追加する
+ACFは、カスタムフィールドを追加するプラグインです。通常、Wordpressにはタイトル、本文、カテゴリ、タグなどのフィールドがありますが、ACFを使うことで、それらに加えて、独自のフィールドを追加することができます。
+
+今回、CPT UIで作成したカスタム投稿タイプに、ACFを使って、画像データに関するカスタムフィールドを追加しました。具体的には以下のようなフィールドを追加しました。
+
+- 画像ファイル
+- バナークリック時の遷移先URL
+- バナーの表示順
+- バナーのaltテキスト
+
+![ACFの設定画面](/images/banner/acf.png)
+
+![ACFとTypeを接続する設定](/images/banner/connect_type_and_acf.png)
+
+このように設定することで、例えば「レシピスライダーバナー」の投稿タイプにおいて、以下のようにデータを登録することができます。 
+
+![投稿タイプの設定画面](/images/banner/wordpress_recipe-banner.png)
+
+### [Wordpress REST API](https://developer.wordpress.org/rest-api/)を使って、カスタム投稿タイプのデータをREST APIで取得できるようにする
+Wordpress REST APIは、WordpressのデータをJSON形式で取得することができるAPIです。通常、Wordpressには管理画面があり、そこでデータを登録・編集することができますが、Wordpress REST APIを使うことで、そのデータを外部のアプリケーションから取得することができます。
+
+今回、先述の通りACFを使って、独自のフィールドを追加しており、それらのデータを取得する必要があります。
+
+ACFの設定画面で、以下の画像の通り、REST APIで露出することを設定することで、Wordpress REST APIで独自のフィールドのデータを取得することができます。
+
+![REST APIで露出することの設定画面](/images/banner/show_in_rest_api.png)
+
+例えば以下のようなエンドポイントでデータを取得することができます。（`recipe-slide-banners`は「レシピスライダーバナー」の投稿タイムのslug）
+
+```shell
+> curl https://{your_domain}/wp-json/acf/v2/recipe-slide-banners
+```
+
+```json
+[
+  {
+    "id": xxxx,
+    "acf": {
+      "image": "https://veganguide.vcook.jp/wp-content/uploads/2024/02/trial_week.png",
+      "order": "1",
+      "url": "https://vcooksuper.jp/blogs/news/nomeatingcampaign",
+      "alt": "ヴィーガン冷凍惣菜豪華3種セット 2024/2/23~29"
+    }
+  }
+]
+```
+
+### あとはレシピ側で、Wordpress REST APIを叩いて、バナー画像を表示するだけ
+ここからは、実際にコードを書いていくことになります。
+
+レシピではバックエンドはRuby on Railsで、フロントエンドはそのままRailsのテンプレートエンジンを使っています。ゆえに以下のサンプルコードはRubyです。実際にはさらに例外処理などを書くと思いますが、趣旨ではないので省略します。
+
+```ruby
+# app/controllers/home_controller.rb
+class HomeController < ApplicationController
+  def index
+    @slide_banners = fetch_slide_banners
+  end
+
+  private
+
+  def fetch_slide_banners
+    response = HTTP.get('https://{your_domain}/wp-json/acf/v2/recipe-slide-banners')
+    JSON.parse(response.body)
+  end
+end
+```
+
+```erb
+<!-- app/views/home/index.html.erb -->
+<% @slide_banners.each do |banner| %>
+  <a href="<%= banner['acf']['url'] %>">
+    <img src="<%= banner['acf']['image'] %>" alt="<%= banner['acf']['alt'] %>">
+</a>
+```
+
+## 最後に
+今回は、エンジニアに依頼せずとも誰でもバナー画像の追加・削除ができるようにすることで、事業運営を加速させるための取り組みについて紹介しました。
+
+Wordpressは、プラグインが充実しているので今回のような課題に対しても3時間程度で実現することができ、とても助かりました😎
+
+今回の記事が、同じような課題を抱えている方の参考になれば幸いです。
+
+ブイクックに興味がある方は、ぜひブイクックの[ブイクックのカルチャーガイド](https://doc.vcook.co.jp/vcookcultureguide)をご覧ください。
+
+それでは！
