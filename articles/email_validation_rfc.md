@@ -28,7 +28,6 @@ Errataとは、RFCなどの技術文書における誤りや不正確な記述�
 
 2. ドメインパート（@の後の部分）
    - 例：example@`gmail.com`
-   - 各ラベル（ドットで区切られた部分）は最大63文字
    - ドメイン全体では最大255文字まで
 
 これらの制限は、メールプロトコルの技術的な制約に基づいています。
@@ -48,11 +47,11 @@ RFC 3696のErrata ID 1690によると、メールアドレス全体の制限は*
    - 合計：320文字（理論上の最大）
 
 3. **実用的な制限**
-   - ドメイン名の末尾にはドット（.）が必要
-   - 実際のメールアドレスでは、ドメインパートは254文字未満になる
-   - そのため、実質的な制限は254文字が適切
-
-# バリデーションの実装について
+   - RFC 2821では、forward-pathに256文字の制限を設けています
+   - forward-pathは `<` [ A-d-l ":" ] Mailbox `>` の形式で定義されています
+   - つまり、メールアドレス（Mailbox）の前後に少なくとも山括弧（`<` と `>`）が必要です
+   - この2文字分を考慮すると、メールアドレス自体は254文字が上限となります
+# コードで表現すると
 
 メールアドレスのバリデーションを実装する際は、以下のポイントを考慮することをお勧めします：
 
@@ -83,3 +82,4 @@ end
 
 - [RFC 3696 Errata ID 1690](https://www.rfc-editor.org/errata/eid1690)
 - [RFC 5321 - Simple Mail Transfer Protocol](https://tools.ietf.org/html/rfc5321)
+- [What Is the Maximum Length of an Email Address?](https://www.directedignorance.com/blog/maximum-length-of-email-address)
